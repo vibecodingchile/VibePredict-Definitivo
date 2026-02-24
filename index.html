@@ -11,117 +11,145 @@
         .ccu-green { color: #00e676; }
         .ccu-bg-green { background-color: #00e676; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        /* Scrollbar personalizada para el chat */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #00e676; border-radius: 4px; }
     </style>
 </head>
 <body class="p-5 font-sans">
     <header class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold italic">vibecodingchile <span class="ccu-green">VibePredict</span></h1>
-        <input type="password" id="apiKey" placeholder="Ingresa API Key aquí" class="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm outline-none focus:border-green-500">
+        <input type="password" id="apiKey" placeholder="Ingresa tu API Key aquí" class="bg-gray-900 border border-gray-700 rounded px-4 py-2 text-sm outline-none focus:border-green-500 w-64">
     </header>
 
     <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="glass p-6 rounded-2xl md:col-span-3 mb-4">
-            <h2 class="text-xl mb-4 font-semibold ccu-green">Predicción de Quiebre de Stock (Demo)</h2>
+            <h2 class="text-xl mb-4 font-semibold ccu-green">Monitor de Quiebre de Stock (VibePredict Demo)</h2>
             <div class="h-[250px] w-full"><canvas id="predictionChart"></canvas></div>
         </div>
 
         <div class="glass p-6 rounded-2xl">
-            <h2 class="text-xl mb-4 font-semibold">1. Contexto Comercial</h2>
-            <div class="text-sm p-4 bg-gray-900 rounded border-l-4 border-green-500 text-gray-300">
-                <p><b>Archivo cargado:</b> ventas_febrero_2026.csv</p>
-                <p class="mt-2"><b>Productos Top:</b> Cerveza Escudo, Pepsi 1.5L, Cristal.</p>
-                <p class="mt-2"><b>Alerta:</b> Temperatura proyectada 32°C para el sábado en Santiago.</p>
+            <h2 class="text-xl mb-4 font-semibold">1. Contexto Comercial B2B</h2>
+            <div class="text-sm p-4 bg-gray-900 rounded border-l-4 border-green-500 text-gray-300 shadow-lg">
+                <p class="mb-2"><span class="text-gray-500">📄 Archivo activo:</span><br><b>historico_ventas_2025.csv</b></p>
+                <p class="mb-2"><span class="text-gray-500">🛒 Productos Top:</span><br>Cerveza Escudo, Pepsi 1.5L, Cristal Mágica.</p>
+                <p><span class="text-gray-500">⚠️ Alerta Externa:</span><br><span class="text-red-400">Temperatura proyectada 32°C para el sábado en RM.</span></p>
             </div>
         </div>
 
         <div class="md:col-span-2 glass p-6 rounded-2xl flex flex-col h-[400px]">
-            <h2 class="text-xl mb-4 font-semibold">2. Consultar al Motor VibePredict</h2>
-            <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 mb-4 p-2 text-sm">
-                <div class="bg-gray-800 p-3 rounded-lg self-start max-w-[80%] text-green-400">
-                    <b>VibePredict:</b> Sistema en línea. Analizando historial de Mi Carro CCU. ¿Qué necesitas predecir, Jefe?
+            <h2 class="text-xl mb-4 font-semibold">2. Consultar al Motor IA (Gemini 1.5 Pro)</h2>
+            <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 mb-4 p-4 text-sm bg-black bg-opacity-30 rounded-lg border border-gray-800">
+                <div class="bg-gray-800 p-3 rounded-lg self-start max-w-[85%] text-green-400 border border-green-900 shadow-md">
+                    <b>VibePredict:</b> Sistemas en línea. API conectada al catálogo de Mi Carro CCU. ¿Qué predicción de stock necesitas para hoy, Jefe?
                 </div>
             </div>
             <div class="flex gap-2">
-                <input type="text" id="userInput" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-3 outline-none focus:border-green-500" placeholder="Ej: ¿Qué sugieres que pida la botillería 'El Sol' para este fin de semana?">
-                <button onclick="askAI()" class="ccu-bg-green text-black font-bold px-6 rounded-lg hover:brightness-110 transition">Predecir</button>
+                <input type="text" id="userInput" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-3 outline-none focus:border-green-500 transition" placeholder="Ej: ¿Qué sugieres pedir si este sábado hay 32 grados?">
+                <button onclick="askAI()" class="ccu-bg-green text-black font-bold px-6 rounded-lg hover:brightness-110 transition shadow-lg">Predecir</button>
             </div>
         </div>
     </main>
 
     <script>
-        // 1. Configuración del Gráfico
+        // --- 1. CONFIGURACIÓN DEL GRÁFICO ---
         const ctx = document.getElementById('predictionChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
+                labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
                 datasets: [{
-                    label: 'Stock en Local (Proyectado)',
-                    data: [80, 75, 60, 40, 15, 5, 0],
-                    borderColor: '#ff5252', tension: 0.4
+                    label: 'Stock sin VibePredict (Riesgo Quiebre)',
+                    data: [80, 75, 60, 40, 15, 0, 0], 
+                    borderColor: '#ff5252', 
+                    borderDash: [5, 5],
+                    tension: 0.4
                 }, {
-                    label: 'Stock Sugerido por VibePredict',
-                    data: [80, 75, 60, 90, 120, 110, 85],
-                    borderColor: '#00e676', backgroundColor: 'rgba(0, 230, 118, 0.1)', fill: true, tension: 0.4
+                    label: 'Stock Sugerido con IA',
+                    data: [80, 75, 60, 90, 120, 110, 85], 
+                    borderColor: '#00e676', 
+                    backgroundColor: 'rgba(0, 230, 118, 0.1)', 
+                    fill: true, 
+                    tension: 0.4
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#333' } }, x: { grid: { color: '#333' } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { 
+                    y: { grid: { color: '#222' } }, 
+                    x: { grid: { color: '#222' } } 
+                },
+                plugins: {
+                    legend: { labels: { color: '#ccc' } }
+                }
+            }
         });
 
-        // 2. Lógica de conexión a la IA (Con diagnóstico de errores)
+        // --- 2. LÓGICA DE CONEXIÓN A LA API (GEMINI 1.5 PRO) ---
         async function askAI() {
-            const input = document.getElementById('userInput').value;
-            const apiKey = document.getElementById('apiKey').value.trim(); 
+            const inputField = document.getElementById('userInput');
+            const input = inputField.value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
             const chatBox = document.getElementById('chat-box');
             
             if (!apiKey) { 
-                alert("⚠️ Jefe, falta la API Key. Cópiala y pégala en la esquina superior derecha."); 
+                alert("¡Jefe, falta la API Key! Pégala en el cuadro superior derecho antes de consultar."); 
                 return; 
             }
             if (!input) return;
 
-            chatBox.innerHTML += `<div class="bg-gray-700 p-3 rounded-lg self-end text-right ml-auto max-w-[80%]"><b>Tú:</b> ${input}</div>`;
-            document.getElementById('userInput').value = '';
+            // Mostrar el mensaje del usuario
+            chatBox.innerHTML += `<div class="bg-gray-700 p-3 rounded-lg text-white ml-auto max-w-[85%] text-right shadow-md border border-gray-600 mb-2"><b>Tú:</b> ${input}</div>`;
+            inputField.value = '';
             
-            const loadingId = 'loading-' + Date.now();
-            chatBox.innerHTML += `<div id="${loadingId}" class="text-gray-500 text-xs italic">VibePredict está conectando con los servidores...</div>`;
+            // Mostrar indicador de carga
+            const loadingId = "loading-" + Date.now();
+            chatBox.innerHTML += `<div id="${loadingId}" class="text-green-600 text-xs italic mb-2 animate-pulse">Procesando miles de transacciones de CCU...</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const systemPrompt = "Eres VibePredict, IA de vibecodingchile para CCU. Responde muy corto, técnico y enfocado en stock B2B. Pregunta: " + input;
+            // Instrucciones secretas para que la IA actúe como VibePredict
+            const systemPrompt = "Eres VibePredict, una IA predictiva creada por vibecodingchile para clientes B2B de CCU. Responde de forma técnica, profesional, muy concisa y enfócate siempre en evitar quiebres de stock y aumentar ventas. El usuario (tu jefe) te pregunta: " + input;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                // Endpoint actualizado a gemini-1.5-pro
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: systemPrompt }] }] 
+                    })
                 });
                 
                 const data = await response.json();
                 document.getElementById(loadingId).remove();
                 
-                if (!response.ok) {
-                    console.error("Error de Google:", data);
-                    chatBox.innerHTML += `<div class="bg-red-900 border border-red-500 p-3 rounded-lg self-start max-w-[80%] text-red-200">
-                        <b>⚠️ Error del Servidor:</b> ${data.error ? data.error.message : 'Error desconocido'}<br>
-                        <small><i>Revisa que tu API Key esté bien copiada y no tenga espacios extra.</i></small>
-                    </div>`;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    return;
+                // Manejo de errores de la API
+                if (data.error) {
+                    throw new Error(data.error.message);
                 }
 
                 const aiResponse = data.candidates[0].content.parts[0].text;
-                chatBox.innerHTML += `<div class="bg-gray-800 border border-green-500 p-3 rounded-lg self-start max-w-[80%] text-green-300"><b>VibePredict:</b> ${aiResponse}</div>`;
+                
+                // Mostrar la respuesta de la IA
+                chatBox.innerHTML += `<div class="bg-gray-800 border-l-4 border-green-500 p-3 rounded-lg self-start max-w-[85%] text-gray-200 shadow-md mb-2"><b class="text-green-400">VibePredict:</b><br>${aiResponse.replace(/\n/g, '<br>')}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
 
             } catch (error) {
-                console.error("Error de código o red:", error);
                 document.getElementById(loadingId).remove();
-                chatBox.innerHTML += `<div class="bg-red-900 border border-red-500 p-3 rounded-lg self-start max-w-[80%] text-red-200">
-                    <b>⚠️ Error de Conexión:</b> No se pudo llegar al servidor. ¿Estás conectado a internet?
-                </div>`;
+                chatBox.innerHTML += `<div class="bg-red-900 border border-red-500 p-3 rounded-lg self-start max-w-[85%] text-white mb-2"><b>Error del Sistema:</b> No se pudo conectar. Verifica que tu API Key sea correcta y no tenga espacios en blanco. (Detalle: ${error.message})</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
+
+        // Permitir enviar con la tecla Enter
+        document.getElementById("userInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                askAI();
+            }
+        });
     </script>
 </body>
 </html>
